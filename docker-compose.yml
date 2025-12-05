@@ -1,0 +1,50 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: artwall-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: artwall
+    volumes:
+      - mongodb_data:/data/db
+
+  server:
+    build: ./server
+    container_name: artwall-server
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URL=mongodb://admin:password123@mongodb:27017/artwall?authSource=admin
+      - PORT=4000
+    env_file:
+      - ./server/.env.docker
+    depends_on:
+      - mongodb
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  client:
+    build: ./client
+    container_name: artwall-client
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BASEURL=http://localhost:4000
+    env_file:
+      - ./client/.env
+    depends_on:
+      - server
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+volumes:
+  mongodb_data:
