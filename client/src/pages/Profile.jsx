@@ -6,63 +6,22 @@ import UserProfileInfo from '../components/UserProfileInfo'
 import PostCard from '../components/PostCard'
 import moment from 'moment'
 import ProfileModal from '../components/ProfileModal'
-import { useAuth } from '@clerk/clerk-react'
-import { useSelector } from 'react-redux'
-import { toast } from 'react-toastify'
-import api from '../api/axios'
 
 const Profile = () => {
-
-  const currentUser = useSelector((state)=> state.user.value)
-  console.log(currentUser)
-  const { getToken } = useAuth()
   const {profileId} = useParams()
   const[user, setUser] = useState(null)
   const[posts, setPosts] = useState([])
   const[activeTab, setActiveTab] = useState('posts')
   const[showEdit, setShowEdit] = useState(false)
 
-  const fetchUser = async (profileId) => {
-    console.log('🔍 Fetching user data for:', profileId)
-    const token = await getToken()
-    console.log('🔑 Token:', token ? 'GOT TOKEN' : 'NO TOKEN')
-    try {
-      const { data } = await api.post(`/api/users/profiles`, {profileId}, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      console.log('📡 API Response:', data)
-      if (data.success) {
-        console.log('✅ User data loaded:', data.profile)
-        setUser(data.profile)
-        setPosts(data.posts)
-      } else {
-        console.log('❌ API Error:', data.message)
-        toast.error(data.message)
-      }
-    } catch (error) {
-      console.log('💥 API Error:', error)
-      toast.error(error.message)
-    }
+  const fetchUser = async () => {
+    setUser(dummyUserData)
+    setPosts(dummyPostsData)
   }
 
   useEffect(()=> {
-    console.log('🎯 useEffect triggered')
-    console.log('📍 ProfileId:', profileId)
-    console.log('👤 CurrentUser:', currentUser)
-    if(profileId){
-      console.log('🔄 Fetching specific user:', profileId)
-      fetchUser(profileId)
-    } else {
-      console.log('🔄 Fetching current user:', currentUser?._id)
-      if(currentUser?._id){
-        fetchUser(currentUser._id)
-      } else {
-        console.log('⚠️ No current user ID available')
-      }
-    }
-  },[profileId, currentUser])
+    fetchUser()
+  },[])
 
   return user ? (
     <div className='relative h-full overflow-y-scroll bg-gray-50 p-6'>
